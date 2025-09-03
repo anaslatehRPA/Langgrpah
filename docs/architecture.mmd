@@ -1,0 +1,26 @@
+flowchart LR
+  User["User (query)"]
+  DL["Document Loader\n(writes: state.docs, state.vectorstore)"]
+  VS["VectorStore\n(optional)"]
+  RET["Retriever\n(reads: state.query, state.docs, state.vectorstore\nwrites: state.retrieved_docs)"]
+  GRADE["Grade Node\n(+ Rewrite loop)\n(reads: state.retrieved_docs, state.docs, state.query\nwrites: state.is_relevant, state.rewrite_count, state.relevant_count)"]
+  PL["Planner\n(reads: state.retrieved_docs, state.docs\nwrites: state.plan_summary)"]
+  LLM["LLM Node\n(reads: state.plan_summary, state.query, state.history, state.docs\nwrites: state.llm_answer)"]
+  AREVAL["Answer Re-evaluation\n(reads: state.llm_answer, state.plan_summary\nwrites: state.llm_answer, state.reeval_count, state.needs_reeval)"]
+  OUTPUT["Output\n(displays: state.llm_answer)"]
+
+  User -->|query| RET
+  DL -->|docs| RET
+  DL --- VS
+  RET -->|retrieved_docs| GRADE
+  GRADE -->|is_relevant = true| PL
+  GRADE -->|not relevant: rewrite/retry| RET
+  PL -->|plan_summary| LLM
+  LLM -->|llm_answer| AREVAL
+  AREVAL -->|needs_reeval: refine| LLM
+  AREVAL -->|final| OUTPUT
+
+  subgraph Storage
+    DL
+    VS
+  end

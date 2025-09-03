@@ -1,0 +1,5 @@
+# Cash Flow - Project Alpha (THB)
+Month, Inflow, Outflow, Net
+Jan, 1000000, 850000, 150000
+Feb, 800000, 900000, -100000
+Mar, 1200000, 950000, 250000
